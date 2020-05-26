@@ -309,9 +309,35 @@ void book_info(Books* books, int* liness, int isbn)
 	}
 }
 
-void all_books_info()
+void all_books_info(Books* books, int* lines)
 {
+	int* temp_arr = (int*)malloc(sizeof(int) * (*lines));
+	for (int i = 0; i < *lines; ++i)
+	{
+		temp_arr[i] = books[i].ISBN;
 
+	}
+	shellSort(temp_arr, (*lines));
+
+	char i[20] = "ISBN";
+	char a[20] = "Автор";
+	char n[20] = "Название книги";
+	char k[20] = "Количество книг";
+	char s[20] = "Книг у студентов";
+	printf("\n\n%9s%30s%40s%20s%20s\n\n", i, a, n, k, s);
+	for (int i = 0; i < *lines; ++i)
+	{
+		for (int g = 0; g < *lines; ++g)
+		{
+			if (books[g].ISBN == temp_arr[i])
+			{
+
+
+				printf("%9d%30s%40s%20d%20d\n\n", books[g].ISBN, books[g].autor, books[g].book_name, books[g].book_num_all, books[g].available_books);
+			}
+		}
+
+	}
 }
 
 int Command(int command, Books* books, int* lines)
@@ -349,34 +375,8 @@ int Command(int command, Books* books, int* lines)
 	}
 	else if (command == 4)
 	{
-
-		int* temp_arr = (int*)malloc(sizeof(int) * (*lines));
-		for (int i = 0; i < *lines; ++i)
-		{
-			temp_arr[i] = books[i].ISBN;
-
-		}
-		shellSort(temp_arr,  (*lines));
-
-		char i[20] = "ISBN";
-		char a[20] = "Автор";
-		char n[20] = "Название книги";
-		char k[20] = "Количество книг";
-		char s[20] = "Книг у студентов";
-		printf("\n\n%9s%30s%40s%20s%20s\n\n", i,a,n,k,s);
-		for (int i = 0; i < *lines; ++i)
-		{
-			for (int g = 0; g < *lines; ++g)
-			{
-				if (books[g].ISBN == temp_arr[i])
-				{
-					
-					
-					printf("%9d%30s%40s%20d%20d\n\n", books[g].ISBN, books[g].autor, books[g].book_name, books[g].book_num_all, books[g].available_books);
-				}
-			}
-			
-		}
+		all_books_info(books, lines);
+		
 
 
 		return new_command();
