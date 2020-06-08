@@ -8,17 +8,63 @@
 #include <cstdlib>
 #include <ctime>
 
-FILE* filee;
-char* file_name;
-char str[500] = "0 - завершить работу программы\n1 - добавить новую книгу\n2 - удалить книгу\n3 - просмотр всей информации по книге\n4 - вывести информацию по всем книгам в виде таблицы\n5 - редактировать информацию по книге\n6 - изменить количество доступных книг в библиотеке\n7 - выдать книгу студенту\n8 - принять книгу от студента\n9 - cделать бэкап\n10 - восстановить базу из файла бэкапа\n11 - поиск по фамилии автора\n\nВведите команду: ";
+FILE* filee_students; // данные файла студентов 
+char* file_name_students; // имя файла с инфой о студентах
 
 
-struct Books {
-	long int ISBN;
+FILE* filee; // данные файла книг 
+char* file_name; //иня файла для книг
+
+
+FILE* filee_usr; // данные файла юзер
+char* file_name_usr; //иня файла юзер
+
+
+FILE* filee_bks_st; // данные файла книги и студенты
+char* file_name_bks_st; //иня файла книги и студенты
+
+
+char str[] = "0 - завершить работу программы\n1 - добавить новую книгу\n2 - удалить книгу\n3 - просмотр всей информации по книге\n4 - вывести информацию по всем книгам в виде таблицы\n5 - редактировать информацию по книге\n6 - изменить количество доступных книг в библиотеке\n7 - выдать книгу студенту\n8 - принять книгу от студента\n9 - cделать бэкап\n10 - восстановить базу из файла бэкапа\n11 - поиск по фамилии автора\n\nВведите команду: ";
+char str_0[] = "-1 - сменить меню\n0 - завершить работу программы\n1 - добавить новую книгу\n2 - удалить книгу\n3 - просмотр всей информации по книге\n4 - вывести информацию по всем книгам в виде таблицы\n5 - редактировать информацию по книге\n6 - изменить количество доступных книг в библиотеке\n7 - выдать книгу студенту\n8 - принять книгу от студента\n9 - cделать бэкап\n10 - восстановить базу из файла бэкапа\n11 - поиск по фамилии автора\n\nВведите команду: ";
+char str_st[] = "0 - завершить работу программы\n1 - добавить студента\n2 - удалить студента по номеру зачетной книжки\n3 - редактировать информацию по студенту\n4 - вывести информацию по всем студентам в виде таблицы\n5 - просмотреть информацию по студенту по номеру зачетной книжки\n6 - сделать бэкап\n7 - восстановить базу из файла бэкапа\n8 - поиск по фамилии студента\n\nВведите команду: ";
+char str_st_0[] = "-1 - сменить меню\n0 - завершить работу программы\n1 - добавить студента\n2 - удалить студента по номеру зачетной книжки\n3 - редактировать информацию по студенту\n4 - вывести информацию по всем студентам в виде таблицы\n5 - просмотреть информацию по студенту по номеру зачетной книжки\n6 - сделать бэкап\n7 - восстановить базу из файла бэкапа\n8 - поиск по фамилии студента\n\nВведите команду: ";
+char str_admin[] = "0 - завершить работу программы\n1 - меню студентов\n2 - меню книг\n\nВведите команду: ";
+
+
+
+struct Books 
+{
+	long long int ISBN;
 	char autor[200];
 	char book_name[200];
 	int book_num_all;
 	int available_books;
+};
+
+struct Students 
+{
+	char zachetka[20];
+	char surname[100];
+	char name[100];
+	char patronymic[100]; //отчество
+	char faculty[5];
+	char specialty[100];
+	
+};
+
+struct Users
+{
+	char login[20];
+	char password[20];
+	int students;
+	int books;
+};
+
+struct Books_St
+{
+	long long int ISBN;
+	char zachetka[20];
+	char date[15];
 };
 
 int increment(long inc[], long size) {
@@ -67,6 +113,20 @@ void shellSort(T* a, long size) {
 			a[j + inc] = temp;
 		}
 	}
+}
+
+int str_cmp(char* a, char* b)
+{
+	int k = 1;
+	for (int i = 0; a[i] != '\0' || b[i] != '\0'; ++i)
+	{
+		if (a[i] != b[i])
+		{
+			k = 0;
+			break;
+		}
+	}
+	return k;
 }
 
 char* get_strng(char z = -1)
@@ -169,34 +229,156 @@ Books* start(int* lines)
 	{
 		perror("fopen");
 		system("pause");
+		system("cls");
 		return NULL;
 	}
 
 
 	// кол-во строк в файле
-	int liness = str_count(filee);
-	*lines = liness;
+	
 
 
-	// выделяем память под массив структур по кол-ву строк в файле
-	Books* books = (Books*)malloc(sizeof(Books) * liness);
+	// выделяем память под массив структур 
+	Books* books = (Books*)malloc(sizeof(Books));
 
 
-
+	int i = 0;
+	fscanf(filee, "%lld;%[^;];%[^;];%d;%d", &(books[i].ISBN), books[i].autor, books[i].book_name, &(books[i].book_num_all), &(books[i].available_books));
 	//считываем данные из файла в структуру
-	for (int i = 0; i < liness; ++i)
+	
+	for (++i; books[i - 1].ISBN > 0; ++i)
 	{
-		fscanf(filee, "%d;%[^;];%[^;];%d;%d", &(books[i].ISBN), books[i].autor, books[i].book_name, &(books[i].book_num_all), &(books[i].available_books));
-
+		books = (Books*)realloc(books, sizeof(Books) * (i + 1));
+		fscanf(filee, "%lld;%[^;];%[^;];%d;%d", &(books[i].ISBN), books[i].autor, books[i].book_name, &(books[i].book_num_all), &(books[i].available_books));
+		
 		//удалить на релизе 
 		//printf("%d\n%s\n%s\n%d\n%d\n\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
 	}
-	fseek(filee, 0, 0); //перемещаем курсор в начало строки
+	*lines = i - 1;
+	fseek(filee, 0, 0); //перемещаем курсор в начало файла
 
 	return books;
 }
 
-int isbn_exist(Books* book, int liness, int isbn)
+Students* start_st(int* lines_st)
+{
+	
+
+	
+
+	
+
+	// открываем файл (если не открылся - завершаем прогу)
+	if (!(filee_students = fopen(file_name_students, "r+")))
+	{
+		perror("fopen");
+		system("pause");
+		system("cls");
+		return NULL;
+	}
+
+
+	// кол-во строк в файле
+	
+
+
+	// выделяем память под массив структур 
+	Students* students = (Students*)malloc(sizeof(Students));
+
+
+	int i = 0;
+	fscanf(filee_students, "%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+	//считываем данные из файла в структуру
+	
+	for (++i; students[i - 1].zachetka[0] > 0; ++i) // если первым символом в номере зачетной книжки идет не число, значит строки в файле кончились
+	{
+		students = (Students*)realloc(students, sizeof(Students) * (i + 1));
+		fscanf(filee_students, "\n%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+
+		//удалить на релизе 
+		//printf("%d\n%s\n%s\n%d\n%d\n\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+	}
+	*lines_st = i - 1;
+	fseek(filee_students, 0, 0); //перемещаем курсор в начало файла
+
+	return students;
+
+}
+
+Users* start_usr(int* lines_usr)
+{
+	// открываем файл (если не открылся - завершаем прогу)
+	if (!(filee_usr = fopen(file_name_usr, "r+")))
+	{
+		perror("fopen");
+		system("pause");
+		system("cls");
+		return NULL;
+	}
+
+
+	// кол-во строк в файле
+
+
+
+	// выделяем память под массив структур 
+	Users* users = (Users*)malloc(sizeof(Users));
+
+
+	int i = 0;
+	fscanf(filee_usr, "%[^;];%[^;];%d;%d", users[i].login, users[i].password, &(users[i].students), &(users[i].books));
+
+	for (++i; users[i].students > -1; ++i) // если первым символом в номере зачетной книжки идет не число, значит строки в файле кончились
+	{
+		users = (Users*)realloc(users, sizeof(Users) * (i + 1));
+		fscanf(filee_usr, "\n%[^;];%[^;];%d;%d", users[i].login, users[i].password, &(users[i].students), &(users[i].books));
+
+		//удалить на релизе 
+		//printf("%d\n%s\n%s\n%d\n%d\n\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+	}
+	*lines_usr = i - 1;
+	fseek(filee_usr, 0, 0); //перемещаем курсор в начало файла
+
+	return users;
+}
+
+Books_St* start_bks_st(int* lines_bks_st)
+{
+	// открываем файл (если не открылся - завершаем прогу)
+	if (!(filee_bks_st = fopen(file_name_bks_st, "r+")))
+	{
+		perror("fopen");
+		system("pause");
+		system("cls");
+		return NULL;
+	}
+
+
+	// кол-во строк в файле
+
+
+
+	// выделяем память под массив структур 
+	Books_St* books_st = (Books_St*)malloc(sizeof(Books_St));
+
+
+	int i = 0;
+	fscanf(filee_bks_st, "%lld;%[^;];%[^\n]", &(books_st[i].ISBN), books_st[i].zachetka, books_st[i].date);
+
+	for (++i; books_st[i - 1].ISBN > -1; ++i) // если первым символом в номере книжки идет не число, значит строки в файле кончились
+	{
+		books_st = (Books_St*)realloc(books_st, sizeof(Books_St) * (i + 1));
+		fscanf(filee_bks_st, "\n%lld;%[^;];%[^\n]", &(books_st[i].ISBN), books_st[i].zachetka, books_st[i].date);
+		//удалить на релизе 
+		//printf("%d\n%s\n%s\n%d\n%d\n\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+	}
+	*lines_bks_st = i - 1;
+	fseek(filee_bks_st, 0, 0); //перемещаем курсор в начало файла
+
+	return books_st;
+}
+
+long long int isbn_exist(Books* book, int liness, long long int isbn)
 {
 	int k = 1;
 	for (int i = 0; i < liness ; ++i)
@@ -218,6 +400,28 @@ int isbn_exist(Books* book, int liness, int isbn)
 	}
 }
 
+int zachetka_exist(Students* students, int liness, char* zachetka)
+{
+	int k = 1;
+	for (int i = 0; i < liness; ++i)
+	{
+		if (str_cmp(students[i].zachetka, zachetka))
+		{
+			k = 0;
+		}
+	}
+
+	if (k)
+	{
+
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void rewriting(Books* books, int* lines)
 {
 
@@ -227,17 +431,34 @@ void rewriting(Books* books, int* lines)
 	for (int i = 0; i < *lines && books[i].ISBN > 0; ++i)// books[i].ISBN > 0 - если менять файл в exel, то появляется невидимая строка, из-за которой *lines получается на 1 больше действительного
 	{
 		if (*lines - i - 1 && books[i+1].ISBN > 0)
-			fprintf(filee, "%d;%s;%s;%d;%d\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+			fprintf(filee, "%lld;%s;%s;%d;%d\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
 		else
-			fprintf(filee, "%d;%s;%s;%d;%d", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+			fprintf(filee, "%lld;%s;%s;%d;%d", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
 
 
 	}
 }
 
-void isbn_new(Books* books, int* lines,int ibsn)
+void rewriting_st(Students* students, int* lines)
 {
-	int new_isbn = isbn_exist(books, *lines, ibsn);
+
+	fclose(filee_students);
+	filee_students = fopen(file_name_students, "w");
+
+	for (int i = 0; i < *lines && students[i].zachetka[0] > 0; ++i)// books[i].ISBN > 0 - если менять файл в exel, то появляется невидимая строка, из-за которой *lines получается на 1 больше действительного
+	{
+		if (*lines - i - 1 && students[i + 1].zachetka[0] > 0)
+			fprintf(filee_students, "%s;%s;%s;%s;%s;%s\n", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+		else
+			fprintf(filee_students, "%s;%s;%s;%s;%s;%s", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+
+
+	}
+}
+
+void isbn_new(Books* books, int* lines, long long int ibsn)
+{
+	long long int new_isbn = isbn_exist(books, *lines, ibsn);
 
 	if (new_isbn)
 	{
@@ -246,7 +467,19 @@ void isbn_new(Books* books, int* lines,int ibsn)
 		books = (Books*)realloc(books, sizeof(Books) * z);//выделям память на новую структуру для книги
 		books[--z].ISBN = new_isbn;
 		printf("\nВведите данные книги:\n");
-		scanf("%s\n%s\n%d\n%d", books[z].autor, books[z].book_name, &(books[z].book_num_all), &(books[z].available_books));
+		printf("\nВведите автора: ");
+		char* temp = get_strng();
+		strcpy(books[z].autor, temp);
+
+		printf("\nВведите название книги: ");
+		temp = get_strng();
+		strcpy(books[z].book_name, temp);
+
+		printf("\nВведите общее количество книг: ");
+		scanf("%d", &(books[z].book_num_all));
+
+		printf("\nВведите количество доступных книг: ");
+		scanf("%d", &(books[z].available_books));
 
 		rewriting(books, lines);
 		printf("\nКнига успешно добавлена!\n\n");
@@ -259,46 +492,219 @@ void isbn_new(Books* books, int* lines,int ibsn)
 	}
 }
 
-void delete_book(Books* book, int* liness, int isbn)
+void zachetka_new(Students* students, int* lines, char* zachetka)
 {
-	int k = 0;
-	int i = 0;
-	for (i; i < *liness; ++i)
+	 
+
+	if (zachetka_exist(students, *lines, zachetka))
 	{
-		if (book[i].ISBN == isbn)
+		++* lines;
+		int z = *lines;
+		students = (Students*)realloc(students, sizeof(Students) * z);//выделям память на новую структуру для книги
+		
+		strcpy(students[--z].zachetka, zachetka);
+
+		printf("\nВведите данные студента:\n");
+		printf("\nВведите фамилию: ");
+		char* temp = get_strng();
+		strcpy(students[z].surname, temp);
+		
+		printf("\nВведите имя: ");
+		temp = get_strng();
+		strcpy(students[z].name, temp);
+
+		printf("\nВведите отчество: ");
+		temp = get_strng();
+		strcpy(students[z].patronymic, temp);
+
+		printf("\nВведите факультет: ");
+		temp = get_strng();
+		strcpy(students[z].faculty, temp);
+
+		printf("\nВведите специальность: ");
+		temp = get_strng();
+		strcpy(students[z].specialty, temp);
+
+
+		rewriting_st(students, lines);
+		printf("\nСтудент успешно добавлен!\n\n");
+
+
+	}
+	else
+	{
+		printf("\nСтудент с номером зачетки = %s уже существует\n", zachetka);
+	}
+}
+
+void delete_book(Books* book, Books_St* bks_st, int* lines_bks_st, int* liness, long long int isbn)
+{
+	int z = 1;// проверка на то, есть ли книга в файле с студентами и книгами (можно удалить книгу если ее нет у студентов)
+	for (int a = 0; a < *lines_bks_st; ++a)
+	{
+		if (bks_st[a].ISBN == isbn)
 		{
 
-			k = 1;
+			z = 0;
 			break;
 		}
 	}
 
-	if (k)
+	if (z)
 	{
-		for (i; i < *liness - 1; ++i)
+		// проверка на то есть ли книга в файле с книгами
+		int k = 0;
+		int i = 0;
+		for (i; i < *liness; ++i)
 		{
-			book[i].ISBN			= book[i + 1].ISBN; //1
-			book[i].book_num_all	= book[i + 1].book_num_all;//4
-			book[i].available_books	= book[i + 1].available_books;//5
+			if (book[i].ISBN == isbn)
+			{
 
-			strcpy(book[i].autor, book[i + 1].autor);//2
-			strcpy(book[i].book_name, book[i + 1].book_name);//3
+				k = 1;
+				break;
+			}
 		}
-		--* liness;
-		rewriting(book, liness);
-		printf("\nКнига успешно удалена!\n\n");
+
+		if (k)
+		{
+			for (i; i < *liness - 1; ++i)
+			{
+				book[i].ISBN = book[i + 1].ISBN; //1
+				book[i].book_num_all = book[i + 1].book_num_all;//4
+				book[i].available_books = book[i + 1].available_books;//5
+
+				strcpy(book[i].autor, book[i + 1].autor);//2
+				strcpy(book[i].book_name, book[i + 1].book_name);//3
+			}
+			--* liness;
+			rewriting(book, liness);
+			printf("\nКнига успешно удалена!\n\n");
+		}
+		else
+		{
+			printf("\nКниги c ISBN = %lld не существует\n\n", isbn);
+		}
 	}
 	else
 	{
-		printf("\nКниги c ISBN = %d не существует\n\n", isbn);
+		printf("\nКнига c ISBN = %lld есть у студента/ов\n\n", isbn);
 	}
 }
 
-int new_command()
+void delete_student(Students* students, Books_St* bks_st, int* lines_bks_st, int* liness, char* zachetka)
+{
+	int z = 1;// проверка на то, есть ли студент в файле с студентами и книгами (можно удалить студента если у него нет книг)
+	for (int a = 0; a < *lines_bks_st; ++a)
+	{
+		if (str_cmp(bks_st[a].zachetka, zachetka))
+		{
+
+			z = 0;
+			break;
+		}
+	}
+	
+	if (z)
+	{
+		// проверка на то, есть ли зачетка в файле со студентами
+		int k = 0;
+		int i = 0;
+		for (i; i < *liness; ++i)
+		{
+			if (str_cmp(students[i].zachetka, zachetka))
+			{
+
+				k = 1;
+				break;
+			}
+		}
+
+		if (k)
+		{
+			for (i; i < *liness - 1; ++i)
+			{
+
+
+				strcpy(students[i].zachetka, students[i + 1].zachetka);
+				strcpy(students[i].surname, students[i + 1].surname);
+				strcpy(students[i].name, students[i + 1].name);
+				strcpy(students[i].patronymic, students[i + 1].patronymic);
+				strcpy(students[i].faculty, students[i + 1].faculty);
+				strcpy(students[i].specialty, students[i + 1].specialty);
+			}
+			--* liness;
+
+			rewriting_st(students, liness);
+			printf("\nСтудент успешно удален!\n\n");
+		}
+		else
+		{
+			printf("\nСтудента c номером зачетки = %s не существует в файле = %s\n\n", zachetka, file_name_students);
+		}
+	}
+	else
+	{
+		printf("\nУ студента c номером зачетки = %s есть книги\n\n", zachetka);
+	}
+}
+
+int new_command(int i = 1)
+{
+	if (i)
+	{
+		system("pause");
+		system("cls");
+		printf(str);
+
+		// запрашиваем новую команду
+		int commandd;
+		scanf("%d", &commandd);
+		return commandd;
+	}
+	else
+	{
+		system("pause");
+		system("cls");
+		printf(str_0);
+
+		// запрашиваем новую команду
+		int commandd;
+		scanf("%d", &commandd);
+		return commandd;
+	}
+}
+
+int new_command_st(int i = 1)
+{
+	if (i)
+	{
+		system("pause");
+		system("cls");
+		printf(str_st);
+
+		// запрашиваем новую команду
+		int commandd;
+		scanf("%d", &commandd);
+		return commandd;
+	}
+	else
+	{
+		system("pause");
+		system("cls");
+		printf(str_st_0);
+
+		// запрашиваем новую команду
+		int commandd;
+		scanf("%d", &commandd);
+		return commandd;
+	}
+}
+
+int new_command_admin()
 {
 	system("pause");
 	system("cls");
-	printf(str);
+	printf(str_admin);
 
 	// запрашиваем новую команду
 	int commandd;
@@ -306,7 +712,7 @@ int new_command()
 	return commandd;
 }
 
-void book_info(Books* books, int* liness, int isbn)
+void book_info(Books* books, int* liness, long long int isbn)
 {
 	int k = 0;
 	int i = 0;
@@ -323,7 +729,7 @@ void book_info(Books* books, int* liness, int isbn)
 	if (k)
 	{
 		
-		printf("\nISBN книги - %d\n", books[i].ISBN); 
+		printf("\nISBN книги - %lld\n", books[i].ISBN); 
 		printf("Автор книги - %s\n", books[i].autor); 
 		printf("Название книги - %s\n", books[i].book_name); 
 		printf("Количество книг - %d\n", books[i].book_num_all); 
@@ -336,19 +742,56 @@ void book_info(Books* books, int* liness, int isbn)
 	}
 	else
 	{
-		printf("\nКниги c ISBN = %d не существует\n\n", isbn);
+		printf("\nКниги c ISBN = %lld не существует\n\n", isbn);
+	}
+}
+
+void student_info(Students* students, int* liness, char* zachetka)
+{
+	int k = 0;
+	int i = 0;
+	for (i; i < *liness; ++i)
+	{
+		if (str_cmp(students[i].zachetka, zachetka))
+		{
+
+			k = 1;
+			break;
+		}
+	}
+
+	if (k)
+	{
+
+		printf("\nНомер зачетки\t - %s\n\n", students[i].zachetka);
+		printf("Фамилия\t\t - %s\n\n", students[i].surname);
+		printf("Имя\t\t - %s\n\n", students[i].name);
+		printf("Отчество\t - %s\n\n", students[i].patronymic);
+		printf("Факультет\t - %s\n\n", students[i].faculty);
+		printf("Специальность\t - %s\n\n", students[i].specialty);
+
+
+
+
+		printf("\nИнформация о студенте успешно выдана!\n\n");
+	}
+	else
+	{
+		printf("\nСтудента c номером зачетки = %ы не существует\n\n", zachetka);
 	}
 }
 
 void all_books_info(Books* books, int* lines)
 {
-	int* temp_arr = (int*)malloc(sizeof(int) * (*lines));
+	long long int* temp_arr = (long long int*)malloc(sizeof(long long int) * (*lines));
 	for (int i = 0; i < *lines; ++i)
 	{
 		temp_arr[i] = books[i].ISBN;
 
 	}
 	shellSort(temp_arr, (*lines));
+
+	
 
 	char i[20] = "ISBN";
 	char a[20] = "Автор";
@@ -364,14 +807,34 @@ void all_books_info(Books* books, int* lines)
 			{
 
 
-				printf("%9d%30s%40s%20d%20d\n\n", books[g].ISBN, books[g].autor, books[g].book_name, books[g].book_num_all, books[g].available_books);
+				printf("%9lld%30s%40s%20d%20d\n\n", books[g].ISBN, books[g].autor, books[g].book_name, books[g].book_num_all, books[g].available_books);
 			}
 		}
 
 	}
 }
 
-void change_book(Books* books, int* liness, int isbn)
+void all_students_info(Students* students, int* lines)
+{
+	char z[] = "Номер зачетки";
+	char fa[] = "Фамилия";
+	char i[] = "Имя";
+	char o[] = "Отчество";
+	char f[] = "Факультет";
+	char s[] = "Специальность";
+	printf("\n\n%15s%15s%15s%15s%15s%50s\n\n", z, fa, i, o, f, s);
+	for (int i = 0; i < *lines; ++i)
+	{
+		
+
+
+		printf("%15s%15s%15s%15s%15s%50s\n\n", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+			
+
+	}
+}
+
+void change_book(Books* books, int* liness, long long int isbn)
 {
 	int k = 0;
 	int i = 0;
@@ -406,11 +869,60 @@ void change_book(Books* books, int* liness, int isbn)
 	}
 	else
 	{
-		printf("\n\nКниги c ISBN = %d не существует\n\n", isbn);
+		printf("\n\nКниги c ISBN = %lld не существует\n\n", isbn);
 	}
 }
 
-void new_av_book(Books* books, int* liness, int isbn)
+void change_student(Students* students, int* liness, char* zachetka)
+{
+	int k = 0;
+	int i = 0;
+	for (i; i < *liness; ++i)
+	{
+		if (str_cmp(students[i].zachetka, zachetka))
+		{
+
+			k = 1;
+			break;
+		}
+	}
+
+	if (k)
+	{
+		
+			printf("\nВведите фамилию: ");
+			char* temp = get_strng();
+			strcpy(students[i].surname, temp);
+			
+			printf("\nВведите имя: ");
+			temp = get_strng();
+			strcpy(students[i].name, temp);
+
+			printf("\nВведите отчество: ");
+			temp = get_strng();
+			strcpy(students[i].patronymic, temp);
+
+			printf("\nВведите факультет: ");
+			temp = get_strng();
+			strcpy(students[i].faculty, temp);
+
+			printf("\nВведите специальность: ");
+			temp = get_strng();
+			strcpy(students[i].specialty, temp);
+		
+		
+
+
+		rewriting_st(students, liness);
+		printf("\nИнформация о студенте успешно изменена!\n\n");
+	}
+	else
+	{
+		printf("\nСтудента c номером зачетки = %s не существует\n\n", zachetka);
+	}
+}
+
+void new_av_book(Books* books, int* liness, long long int isbn)
 {
 	int k = 0;
 	int i = 0;
@@ -444,11 +956,11 @@ void new_av_book(Books* books, int* liness, int isbn)
 	}
 	else
 	{
-		printf("\n\nКниги c ISBN = %d не существует\n\n", isbn);
+		printf("\n\nКниги c ISBN = %lld не существует\n\n", isbn);
 	}
 }
 
-void give_book(Books* books, int* liness, int isbn)
+void give_book(Books* books, int* liness, long long int isbn)
 {
 	int k = 0;
 	int i = 0;
@@ -473,17 +985,17 @@ void give_book(Books* books, int* liness, int isbn)
 		}
 		else
 		{
-			printf("\n\nКниги c ISBN = %d нет в наличии\n\n", isbn);
+			printf("\n\nКниги c ISBN = %lld нет в наличии\n\n", isbn);
 		}
 
 	}
 	else
 	{
-		printf("\n\nКниги c ISBN = %d не существует\n\n", isbn);
+		printf("\n\nКниги c ISBN = %lld не существует\n\n", isbn);
 	}
 }
 
-void take_book(Books* books, int* liness, int isbn)
+void take_book(Books* books, int* liness, long long int isbn)
 {
 	int k = 0;
 	int i = 0;
@@ -508,13 +1020,13 @@ void take_book(Books* books, int* liness, int isbn)
 		}
 		else
 		{
-			printf("\n\nВсе книги c ISBN = %d в наличии\n\n", isbn);
+			printf("\n\nВсе книги c ISBN = %lld в наличии\n\n", isbn);
 		}
 
 	}
 	else
 	{
-		printf("\n\nКниги c ISBN = %d не существует\n\n", isbn);
+		printf("\n\nКниги c ISBN = %lld не существует\n\n", isbn);
 	}
 }
 
@@ -540,9 +1052,9 @@ void backup(Books* books, int* liness)
 	for (int i = 0; i < *liness && books[i].ISBN > 0; ++i)// books[i].ISBN > 0 - если менять файл в exel, то появляется невидимая строка, из-за которой *lines получается на 1 больше действительного
 	{
 		if (*liness - i - 1 && books[i + 1].ISBN > 0)
-			fprintf(backupp, "%d;%s;%s;%d;%d\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+			fprintf(backupp, "%lld;%s;%s;%d;%d\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
 		else
-			fprintf(backupp, "%d;%s;%s;%d;%d", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+			fprintf(backupp, "%lld;%s;%s;%d;%d", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
 
 
 	}
@@ -551,30 +1063,64 @@ void backup(Books* books, int* liness)
 	printf("\nБэкап выполнен успешно!\n\nПуть к файлу бэкапа: %s\n\n", backup_name);
 }
 
-void restore_backup(Books* books, int* liness)
+void backup_st(Students* students, int* liness)
+{
+	FILE* backupp;
+	char backup_name[100];
+
+	time_t rawtime;
+	struct tm* timeinfo;
+
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	strftime(backup_name, 100, "C:\\Users\\Александр\\Desktop\\students_backup\\Students  %Hч. %Mм. %Sс.  %m.%d.%Y.csv", timeinfo);
+
+
+
+
+	backupp = fopen(backup_name, "w");
+
+	for (int i = 0; i < *liness && students[i].zachetka[0] > 0; ++i)// books[i].ISBN > 0 - если менять файл в exel, то появляется невидимая строка, из-за которой *lines получается на 1 больше действительного
+	{
+		if (*liness - i - 1 && students[i + 1].zachetka[0] > -1)
+			fprintf(backupp, "%s;%s;%s;%s;%s;%s\n", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+		else
+			fprintf(backupp, "%s;%s;%s;%s;%s;%s", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+
+
+	}
+
+	fclose(backupp);
+	printf("\nБэкап выполнен успешно!\n\nПуть к файлу бэкапа: %s\n\n", backup_name);
+
+}
+
+Books* restore_backup( int* liness)
 {
 	char* temp_name = file_name;
 	file_name = get_strng();
-	books = start(liness);
+	Books* books = start(liness);//	должно возвращать указатель 
 
 	file_name = temp_name;
 	rewriting(books, liness);
 
 	printf("\nБэкап успешно выполнен!\n\n");
+	return books;
 }
 
-int str_cmp(char* a, char* b)
+Students* restore_backup_st(int* liness)
 {
-	int k = 1;
-	for(int i = 0; a[i] != '\0' || b[i] != '\0'; ++i)
-	{
-		if (a[i] != b[i]) 
-		{
-			k = 0;
-			break;
-		}
-	}
-	return k;
+	char* temp_name = file_name_students;
+	file_name_students = get_strng();
+	Students* students = start_st(liness);
+
+	file_name_students = temp_name;
+	rewriting_st(students, liness);
+
+	printf("\nБэкап успешно выполнен!\n\n");
+	return students;
 }
 
 void find_autor(Books* books, int* lines, int i = 0, char* autor = NULL)
@@ -597,7 +1143,7 @@ void find_autor(Books* books, int* lines, int i = 0, char* autor = NULL)
 
 	if (k)
 	{
-		printf("\n_________________________________________\nISBN - %d\n\nАвтор книги - %s\n\nНазвание книги - %s\n\nВсего книг - %d\n\nКниг доступно - %d\n\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
+		printf("\n_________________________________________\nISBN - %lld\n\nАвтор книги - %s\n\nНазвание книги - %s\n\nВсего книг - %d\n\nКниг доступно - %d\n\n", books[i].ISBN, books[i].autor, books[i].book_name, books[i].book_num_all, books[i].available_books);
 		find_autor(books, lines, i + 1, autor);// i + 1, тк нужно продолжить поиск со след элемента
 	}
 	else if(!z)
@@ -606,38 +1152,136 @@ void find_autor(Books* books, int* lines, int i = 0, char* autor = NULL)
 	}
 }
 
-int Command(int command, Books* books, int* lines)
+void find_student(Students* students, int* lines, int i = 0, char* surname = NULL)
+{
+	if (!i) { surname = get_strng(); }// если ф-ция вызвана 1й раз, то запрашиваем ввод автора, далее автор известен
+
+	int k = 0;
+	int z = i;// если функция вызвана впервые и автор не найден, то выведется сообщение, иначе сообщение не верно
+	int res;
+	for (i; i < *lines; ++i)
+	{
+		res = str_cmp(students[i].surname, surname);
+		if (res)//books[i].autor == autor
+		{
+
+			k = 1;
+			break;
+		}
+	}
+
+	if (k)
+	{
+		printf("\n_________________________________________\nНомер зачетки - %s\n\nФамилия - %s\n\nИмя - %s\n\nОтчетсво - %s\n\nФакультет - %s\n\nСпециальность - %s\n\n", students[i].zachetka, students[i].surname, students[i].name, students[i].patronymic, students[i].faculty, students[i].specialty);
+		find_student(students, lines, i + 1, surname);// i + 1, тк нужно продолжить поиск со след элемента
+	}
+	else if (!z)
+	{
+		printf("\n\nСтудента c фамилией = %s не существует\n\n", surname);
+	}
+}
+
+void student_bks_info()
+{
+
+}
+
+int permission(Users* users, int* liness , int* stptr, int* bksptr)
+{
+	system("pause");
+	system("cls");
+	printf("Введите логин: ");
+	char* login = get_strng();
+	
+	
+
+
+	int k = 0;
+	int i = 0;
+	for (i; i < *liness; ++i)
+	{
+		if (str_cmp(users[i].login, login))
+		{
+
+			k = 1;
+			break;
+		}
+	}
+
+	if (k)
+	{
+		
+		printf("\n\nВведите пароль(если забыли, введите \"-1\"): ");
+		char* password = get_strng();
+		char a[] = "-1";
+		while (!(str_cmp(users[i].password, password) || str_cmp(password, a)))
+		{
+			printf("\n\nВведенный пароль неверный, повторите попытку(если забыли, введите \"-1\"): ");
+			password = get_strng();
+		}
+
+		if (str_cmp(password, a))
+		{
+			system("cls");
+			printf("\n\nПовторите попытку авторизации\n\n ");
+			permission(users, liness, stptr, bksptr);
+		}
+		else
+		{
+			system("cls");
+			printf("Вы успешно авторизовались под логином \"%s\"\n\n ", login);
+			*stptr = users[i].students;
+			*bksptr = users[i].books;
+
+		}
+		return k;
+	}
+	else
+	{
+		printf("\nПользователя с логином = \"%s\" не существует\n\nПовторите попытку...\n\n", login);
+		return k;
+	}
+}
+
+
+
+Books* books; // тк Command не возвращает указатель 
+Students* students; // тк Command не возвращает указатель 
+Users* users; // тк Command не возвращает указатель 
+Books_St* bks_st;
+
+
+int Command(int command, int* lines_bks_st, int* lines, int i = 1)
 {
 	if (command == 1)
 	{
 		printf("\nВведите ISBN новой книги: ");
-		int isbn;
-		scanf("%d", &isbn);
+		long long int isbn;
+		scanf("%lld", &isbn);
 		isbn_new(books, lines, isbn);
-		
-		return new_command();
+
 	}
 	else if (command == 2)
 	{
 		printf("\nВведите ISBN для удаления книги: ");
-		int isbn;
-		scanf("%d", &isbn);
-		delete_book(books, lines, isbn);
+		long long int isbn;
+		scanf("%lld", &isbn);
+		delete_book(books,bks_st, lines_bks_st, lines, isbn);
 		
 			
-		return new_command();
+	
 			
 		
 	}
 	else if (command == 3)
 	{
 		printf("\nВведите ISBN для получения информации по книге: ");
-		int isbn;
-		scanf("%d", &isbn);
+		long long int isbn;
+		scanf("%lld", &isbn);
 		book_info(books, lines, isbn);
 
 
-		return new_command();
+		
 	}
 	else if (command == 4)
 	{
@@ -645,64 +1289,63 @@ int Command(int command, Books* books, int* lines)
 		
 
 
-		return new_command();
+		
 	}
 	else if (command == 5)
 	{
-		printf("\nВведите ISBN для редактирования информации информации о книге: ");
-		int isbn;
-		scanf("%d", &isbn);
+		printf("\nВведите ISBN для редактирования информации о книге: ");
+		long long int isbn;
+		scanf("%lld", &isbn);
 		change_book(books, lines, isbn);
 
 
-		return new_command();
+		
 	}
 	else if (command == 6)
 	{
 		printf("\nВведите ISBN для редактирования информации информации о книге: ");
-		int isbn;
-		scanf("%d", &isbn);
+		long long int isbn;
+		scanf("%lld", &isbn);
 		new_av_book(books, lines, isbn);
 
 
 
-		return new_command();
+		
 	}
 	else if (command == 7)
 	{
 		printf("\nВведите ISBN для выдачи книги: ");
-		int isbn;
-		scanf("%d", &isbn);
+		long long int isbn;
+		scanf("%lld", &isbn);
 		give_book(books, lines, isbn);
 
 
-		return new_command();
+		
 	}
 	else if (command == 8)
 	{
 		printf("\nВведите ISBN для сдачи книги: ");
 		int isbn;
-		scanf("%d", &isbn);
+		scanf("%lld", &isbn);
 		take_book(books, lines, isbn);
 
 
-		return new_command();
+		
 	}
 	else if (command == 9)
 	{
 		backup(books, lines);
 
 
-		return new_command();
+		
 	}
 	else if (command == 10)
 	{
 		printf("\nВведите путь к файлу бэкапа: ");
-		restore_backup(books, lines);
+		books = restore_backup(lines);
 		
 
 
-		return new_command();
 	}
 	else if (command == 11)
 	{
@@ -711,7 +1354,7 @@ int Command(int command, Books* books, int* lines)
 
 
 
-		return new_command();
+		
 	}
 	else
 	{
@@ -719,8 +1362,137 @@ int Command(int command, Books* books, int* lines)
 
 
 		
-		return new_command();
+		
 	}
+
+	return new_command(i);
+}
+
+int Command_st(int command, int* lines_bks_st, int* lines, int i = 1)
+{
+	if (command == 1)
+	{
+		printf("\nВведите номер зачетки нового студента: ");
+		char* zachetka = get_strng();
+		
+		zachetka_new(students, lines, zachetka);
+
+		
+	}
+	else if (command == 2)
+	{
+		printf("\nВведите номер зачетки для удаления студента: ");
+		char* zachetka = get_strng();
+
+		delete_student(students, bks_st, lines_bks_st, lines, zachetka);
+
+
+		
+
+
+	}
+	else if (command == 3)
+	{
+		printf("\nВведите номер зачетки для редактирования информации о студенте: ");
+		char* zachetka = get_strng();
+
+		change_student(students, lines, zachetka);
+
+
+		
+	}
+	else if (command == 4)
+	{
+		all_students_info(students, lines);
+
+
+
+		
+	}
+	else if (command == 5)
+	{
+		printf("\nВведите номер зачетки для получении информации о студенте: ");
+		char* zachetka = get_strng();
+
+		student_info(students, lines, zachetka);
+
+
+		
+	}
+	else if (command == 6)
+	{
+		backup_st(students, lines);
+		
+
+
+
+		
+	}
+	else if (command == 7)
+	{
+		printf("\nВведите путь к файлу бэкапа: ");
+		students = restore_backup_st(lines);
+
+
+		
+	}
+	else if (command == 8)
+	{
+		printf("\nВведите фамилию студента для поиска: ");
+		find_student(students, lines);
+
+
+		
+	}
+	else if (command == 9)
+	{
+		printf("\nВведите номер зачетки для получении информации о книгах студента: ");
+		char* zachetka = get_strng();
+
+
+	}
+	else
+	{
+		printf("\nТакой команды не существует\n");
+
+
+
+		
+	}
+
+	return new_command_st(i);
+}
+
+int Command_admin(int command, int* lines_bks_st, int* lines, int* lines_st)
+{
+
+	if (command == 1)// меню студентов
+	{
+		int command_st = new_command_st(0);
+		if (!command_st) return 0;
+		
+		while (command_st != -1) 
+		{ 
+			command_st = Command_st(command_st, lines_bks_st, lines_st, 0);
+			if (!command_st) return 0;
+		}
+	}
+	else if (command == 2) // меню книг
+	{
+		int commandd = new_command(0);
+		if (!commandd) return 0;
+
+		while (commandd != -1)
+		{
+			commandd = Command(commandd, lines_bks_st, lines, 0);
+			if (!commandd) return 0;
+		}
+	}
+	else
+	{
+		printf("\n\nТакой команды не существует!");
+	}
+	return new_command_admin();
 }
 
 int main(int argc, char* argv[])
@@ -729,25 +1501,71 @@ int main(int argc, char* argv[])
 	SetConsoleOutputCP(1251);
 	
 
-	
-	 
-	
-	
-
-
-	printf("Введите имя файла : ");
+	printf("Введите имя файла с информацией о книгах: ");
 	file_name = get_strng();
+	
+	printf("\n\nВведите имя файла с информацией о студентах: ");
+	file_name_students = get_strng();
+
+	printf("\n\nВведите имя файла с информацией о пользователях: ");
+	file_name_usr = get_strng();
+
+	printf("\n\nВведите имя файла с информацией о студентах и книгах: ");
+	file_name_bks_st = get_strng();
+
+	int* lines = (int*)malloc(sizeof(int));// колво строк в файле о книгах
+
+	int* lines_st = (int*)malloc(sizeof(int));// колво строк в файле о студентах
+
+	int* lines_usr = (int*)malloc(sizeof(int));// колво строк в файле о юзерах
+	
+	int* lines_bks_st = (int*)malloc(sizeof(int));// колво строк в файле о студентах и книгах
 
 
-	/*КУЧА КОДА ИЗ МЭЙНА, КОТОРАЯ НУЖНА ДЛЯ 10Й КОМАНДЫ*/
-	int* lines = (int*)malloc(sizeof(int));
-	Books* books = start(lines);
+	int bks, * bksptr = &bks; // права на доступ к изменению и чтению файлов
+	int st, * stptr = &st;
 
 
-	//считыавем команду
-	int command = new_command();
+	while ((books = start(lines)) == NULL || (students  = start_st(lines_st)) == NULL || (users = start_usr(lines_usr)) == NULL || (bks_st = start_bks_st(lines_bks_st)) == NULL)
+	{
+		printf("Введите имя файла : ");
+		file_name = get_strng();
 
-	while (command) { command = Command(command, books, lines); }
+		printf("\n\nВведите имя файла с информацией о студентах: ");
+		file_name_students = get_strng();
+		
+		printf("\n\nВведите имя файла с информацией о пользователях: ");
+		file_name_usr = get_strng();
+
+		printf("\n\nВведите имя файла с информацией о студентах и книгах: ");
+		file_name_bks_st = get_strng();
+	}
+	
+	
+	while(!permission(users, lines_usr, stptr, bksptr)){}
+
+	if (bks && st)
+	{
+		int command = new_command_admin();
+
+		while (command) { command = Command_admin(command, lines_bks_st, lines, lines_st); }
+	}
+	else if (bks)
+	{
+		//считываем команду
+		int command = new_command();
+
+		while (command) { command = Command(command, lines_bks_st, lines); }
+	}
+	else if (st)
+	{
+		//считываем команду
+		int command_st = new_command_st();
+
+		while (command_st) { command_st = Command_st(command_st, lines_bks_st, lines); }
+	}
+
+	
 	
 
 	_putch('\n');
